@@ -1,6 +1,6 @@
 pragma solidity ^0.8.9;
 
-import "@openzeppelin/contracts/token/ERC71/ERC721.sol";
+import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 
 contract GPTMembership is ERC721 {
     address public owner;
@@ -28,7 +28,7 @@ contract GPTMembership is ERC721 {
     mapping(uint256 => Membership) memberships;
     mapping(uint256 => mapping(address => bool))public hasBought;
     mapping(uint256 => mapping(uint256 => address))public membershipTaken;
-    mapping(uint256 => uint256[]) membershipsTaken;
+    mapping(uint256 => uint256[])  membershipsTaken;
 
     modifier onlyOwner(){
         require(msg.sender == owner, "Seulement l'owner peut appeler cette fonction");
@@ -40,10 +40,10 @@ contract GPTMembership is ERC721 {
     ) ERC721(_name, _symbol){
         owner = msg.sender;
     }
-    function list(string memory _name, uint256 const, string memory _date) public
+    function list(string memory _name, uint256 _cost, string memory _date) public
     onlyOwner() {
         membershipTypes++;
-        memberships[membershipsTypes] = Membership(
+        memberships[membershipTypes] = Membership(
             membershipTypes,
             _name,
             _cost,
@@ -53,7 +53,7 @@ contract GPTMembership is ERC721 {
 
     function mint(uint256 _membershipId, address _user, string memory _expiredDate)
     public payable {
-        require(_membershipId != O);
+        require(_membershipId != 0);
         require(_membershipId <= membershipTypes);
 
         require(msg.value >= memberships[_membershipId].cost, "Balance insuffisante");
