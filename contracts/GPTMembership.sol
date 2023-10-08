@@ -24,24 +24,20 @@ contract GPTMembership is ERC721 {
         string expireDate;
     }
 
-    mapping(address => UserMembership) userMemberships;
-    mapping(uint256 => Membership) memberships;
-    mapping(uint256 => mapping(address => bool))public hasBought;
-    mapping(uint256 => mapping(uint256 => address))public membershipTaken;
-    mapping(uint256 => uint256[])  membershipsTaken;
+    mapping(address => UserMembership) public userMemberships;
+    mapping(uint256 => Membership) public memberships;
+    mapping(uint256 => mapping(uint256 => address[])) public membershipsTaken;
 
-    modifier onlyOwner(){
+    modifier onlyOwner() {
         require(msg.sender == owner, "Seulement l'owner peut appeler cette fonction");
         _;
     }
 
-    constructor(
-        string memory _name, string memory _symbol
-    ) ERC721(_name, _symbol){
+    constructor(string memory _name, string memory _symbol) ERC721(_name, _symbol) {
         owner = msg.sender;
     }
-    function list(string memory _name, uint256 _cost, string memory _date) public
-    onlyOwner() {
+
+    function list(string memory _name, uint256 _cost, string memory _date) public onlyOwner() {
         membershipTypes++;
         memberships[membershipTypes] = Membership(
             membershipTypes,
@@ -51,12 +47,11 @@ contract GPTMembership is ERC721 {
         );
     }
 
-    function mint(uint256 _membershipId, address _user, string memory _expiredDate)
-    public payable {
+    function mint(uint256 _membershipId, address _user, string memory _expiredDate) public payable {
         require(_membershipId != 0);
         require(_membershipId <= membershipTypes);
-
         require(msg.value >= memberships[_membershipId].cost, "Balance insuffisante");
+
         totalMemberships++;
 
         userMemberships[_user] = UserMembership(
@@ -67,31 +62,25 @@ contract GPTMembership is ERC721 {
             _expiredDate
         );
 
-        hasBought[_membershipId][msg.sender] = true;
-        membershipsTaken[_membershipId][totalMemberships] = msg.sender;
-        membershipsTaken[_membershipId].push(totalMemberships);
+        membershipsTaken[_membershipId][totalMemberships].push(_user);
 
-        _safeMint(msg.sender, totalMemberships);
+        _safeMint(_user, totalMemberships);
     }
 
-    function getMemberships(uint256 _membershipId) public view returns (Membership
-    memory){
+    function getMemberships(uint256 _membershipId) public view returns (Membership memory) {
         return memberships[_membershipId];
     }
 
-    function getMembershipsTaken(uint256 _membershipId) public view returns (uint256[]
-    memory){
-        return membershipsTaken[_membershipId];
+    function getMembershipsTaken(uint256 _membershipId) public view returns (address[] memory) {
+        return membershipsTaken[_membershipId][totalMemberships];
     }
 
     function withdraw() public onlyOwner() {
-        (bool success,) = owner.call{value : address(this).balance}("");
+        (bool success,) = owner.call{value: address(this).balance}("");
         require(success);
     }
 
-    function getUsermembership(address _address) public view returns (UserMembership
-    memory){
+    function getUsermembership(address _address) public view returns (UserMembership memory) {
         return userMemberships[_address];
     }
-
 }
